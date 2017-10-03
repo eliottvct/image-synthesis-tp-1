@@ -1,0 +1,69 @@
+PlanXZ
+    centre 0.0 -2.5 0.0
+    Kd 0.5 0.5 0.5
+    Ns 20
+    Ks 0.3 0.3 0.3
+    ir 0.0
+
+Sphere
+    centre 1.5 -0.5 10
+    rayon 2.0
+    Kd 0.16 0.12 0.1
+    Ns 150.0
+    Ks 0.5 0.5 0.5
+    Kr 1.0 1.0 1.0
+    ir 1.5
+
+Sphere
+    centre -2.5 -1.0 11
+    rayon 1.5
+    Kd 0.16 0.12 0.1
+    Ns 150.0
+    Ks 0.8 0.8 0.8
+    Kr 1.0 1.0 1.0
+    ir 1.5
+
+Sphere
+    centre 0.0 1.0 14
+    rayon 1.0
+    Kd 1.0 0.2 0.3
+    Ns 15.0
+    Ks 0.2 0.2 0.2
+    ir 0.0
+
+Sphere
+    centre -1.2 -1.5 16
+    rayon 1.0
+    Kd 1.0 1.0 0.0
+    Ns 80.0
+    Ks 0.3 0.3 0.0
+    ir 0.0
+
+Sphere
+    centre 3.5 2.7 15
+    rayon 1.3
+    Kd 0.5 0.5 0.5
+    Ns 120.0
+    Ks 0.5 0.5 0.5
+    ir 0.0
+
+Sphere
+    centre 2.5 -1.5 17
+    rayon 1.0
+    Kd 0.0 0.5 1.0
+    Ns 6.0
+    Ks 0.1 0.1 0.1
+    ir 0.0
+
+Lampe
+    position -20 20 10
+    couleur 0.9 0.9 0.9
+
+Lampe
+    position 20 20 10
+    couleur 0.7 0.7 0.7
+
+Lampe
+    position 20 20 40
+    couleur 0.8 0.8 0.8
+    
