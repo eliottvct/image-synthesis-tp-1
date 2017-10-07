@@ -82,7 +82,7 @@ public class Sphere
     public Couleur Phong(final Scene scene, final Rayon incident, int profondeur)
     {
         // couleur finale = somme des contributions des lampes
-        Couleur finale = new Couleur(0,0,0);
+        Couleur finale = new Couleur(0, 0, 0);
         Couleur kdMod = Kd;
         Couleur ksMod = Ks;
 
@@ -148,7 +148,7 @@ public class Sphere
         }
         */
 
-        // BOSSES
+        // BOSSES + CREVASSES
         // centre du pois le plus proche
         float longitude_pois = (float) Math.round(longitude);
         float latitude_pois = (float) Math.round(latitude);
@@ -167,9 +167,9 @@ public class Sphere
             latitude_pois = (float) (latitude_pois * Math.PI / 8.0);
 
             // coordonnées cartésiennes du pois
-            float x = (float) (rayon * Math.cos(latitude_pois) * Math.cos(longitude_pois));
+            float x = (float) (rayon * Math.cos(longitude_pois) * Math.cos(latitude_pois));
             float y = (float) (rayon * Math.sin(latitude_pois));
-            float z = (float) (rayon * Math.sin(latitude_pois) * Math.sin(longitude_pois));
+            float z = (float) (rayon * Math.sin(longitude_pois) * Math.cos(latitude_pois));
 
             // centre du pois à la surface de la sphère, en coordonnées globales
             Point pois_surface = new Point(x + centre.x, y + centre.y, z + centre.z);
