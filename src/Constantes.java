@@ -34,4 +34,6 @@ public final class Constantes
     // textures
     public static final Couleur POIS_COULEUR = new Couleur(0.8, 0.8, 0.8);
 
+    // multithreading
+    public static final int THREADS_NUMBER = 4;
 }

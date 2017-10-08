@@ -15,6 +15,10 @@ import javax.swing.JPanel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.*;
 
 /**
  * C'est la classe principale du logiciel : elle crée la fenêtre
@@ -23,7 +27,6 @@ import javax.swing.SwingWorker;
 public class Lancer extends JPanel implements ComponentListener
 {
     private static final long serialVersionUID = 1L;
-
 
     // caméra
     private Point Oeil = new Point(0,0,-Constantes.DISTECRAN);
@@ -97,12 +100,18 @@ public class Lancer extends JPanel implements ComponentListener
 
     /**
      * dessine la totalité de l'image
+     *
      * @param largeur
      * @param hauteur
      * @param task
      */
     public void TracerImage(int largeur, int hauteur, TaskTracerImage task)
     {
+
+        // multithreading
+        ExecutorService fixedPool = Executors.newFixedThreadPool(Constantes.THREADS_NUMBER);
+        Set<Callable<Void>> callables = new HashSet<>();
+
         // taille de la vue
         this.largeur = largeur;
         this.hauteur = hauteur;
@@ -114,6 +123,7 @@ public class Lancer extends JPanel implements ComponentListener
         final int N = 4;
         for (int ye = 0; ye < hauteur; ye+=N) {
             for (int xe = 0; xe < largeur; xe+=N) {
+
                 // couleur du pixel au centre du carré N*N
                 Couleur couleur = CouleurPixel(xe+N*0.5f, ye+N*0.5f, 1);
 
@@ -138,39 +148,69 @@ public class Lancer extends JPanel implements ComponentListener
         // passer en revue tous les pixels de l'écran
         for (int ye = 0; ye < hauteur; ye++) {
 
-            Couleur couleur = new Couleur(0, 0, 0);
-
             // avancement ou arrêt
             if (task.progress(ye)) break;
-            // passer en revue tous les pixels de la ligne
-            for (int xe = 0; xe < largeur; xe++) {
 
-                for (int dx = 0; dx < Constantes.ANTIALISING_PRECISION; dx++) {
+            // because we're inside an inner class that can't access, we copy the value of 'ye' inside a final static int
+            // inner classes can only access variables outside their own scope if these variables are defined as 'final'
+            final int yee = ye;
 
-                    for (int dy = 0; dy < Constantes.ANTIALISING_PRECISION; dy++) {
+            // adding a new Callable<Void> to the list of Callables declared above
+            // NOTE: using lambda syntax from Java 8
+            callables.add(() -> {
 
-                        // couleur du pixel
-                        Couleur couleurPixel = CouleurPixel(
-                                xe + (float) dx/(Constantes.ANTIALISING_PRECISION),
-                                ye + (float) dy/(Constantes.ANTIALISING_PRECISION),
-                                Constantes.MAX_REFLETS
-                        );
+                // calling repaint shows the painting's progress, but it takes longer (+ 1000ms)
+                // repaint();
 
-                        couleur = couleur.add(couleurPixel);
+                Couleur couleur = new Couleur(0, 0, 0);
+
+                // passer en revue tous les pixels de la ligne
+                for (int xe = 0; xe < largeur; xe++) {
+
+                    for (int dx = 0; dx < Constantes.ANTIALISING_PRECISION; dx++) {
+
+                        for (int dy = 0; dy < Constantes.ANTIALISING_PRECISION; dy++) {
+
+                            // couleur du pixel
+                            Couleur couleurPixel = CouleurPixel(
+                                    xe + (float) dx/(Constantes.ANTIALISING_PRECISION),
+                                    yee + (float) dy/(Constantes.ANTIALISING_PRECISION),
+                                    Constantes.MAX_REFLETS
+                            );
+
+                            couleur = couleur.add(couleurPixel);
+                        }
                     }
+
+                    couleur = couleur.div(Constantes.ANTIALISING_PRECISION * Constantes.ANTIALISING_PRECISION);
+
+                    // correction gamma
+                    couleur = couleur.correctionGamma(0.8f);
+
+                    // dessiner le pixel de cette couleur
+                    drawPixel(couleur, xe, yee);
                 }
 
-                couleur = couleur.div(Constantes.ANTIALISING_PRECISION * Constantes.ANTIALISING_PRECISION);
-
-                // correction gamma
-                couleur = couleur.correctionGamma(0.8f);
-
-                // dessiner le pixel de cette couleur
-                drawPixel(couleur, xe,ye);
-            }
+                return null;
+            });
         }
 
-        if (! task.isCancelled()) {
+
+        try {
+            fixedPool.invokeAll(callables);
+
+            // we could also store the result of invokeAll in a list of Futures
+            // a Future contains information about the execution of the task
+            // List<Future<Void>> futures = fixedPool.shutdown();
+
+            fixedPool.shutdown();
+            fixedPool.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException ie) {
+            ie.printStackTrace();
+        }
+
+
+        if (!task.isCancelled()) {
             long temps = (System.nanoTime() - startTime) / 1000000L;
             System.out.println("Temps: "+temps+" ms soit "+(largeur*hauteur*1000/temps)+" pixels par seconde");
 
